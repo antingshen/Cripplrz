@@ -2,13 +2,21 @@
 
 #define SDA_PIN BIT7
 #define SCL_PIN BIT6
-#define RGB_ADDRESS (0xc4 >> 1)
+#define RGB_ADDRESS	0x62
+#define LCD_ADDRESS 0x3e
+#define LCD_TOP_LINE 0x80
+#define LCD_BOT_LINE 0xc0
+#define LCD_NUL_ADDR 0x00
 
+#define DATA_SEND_MODE	0	// Send i2c_data until i2c_bytes_remaining is 0. Then exit LPM0
+#define DATA_RECV_MODE	1
+#define LCD_INIT_MODE	2
+#define LCD_WRITE_MODE	3
+int i2c_mode;
 int i2c_bytes_remaining;
 unsigned char* i2c_data;
 
 void i2c_init() {
-	__enable_interrupt();
 	P1SEL |= SDA_PIN | SCL_PIN;		// Set pins to I2C mode
 	P1SEL2 |= SDA_PIN | SCL_PIN;
 
@@ -27,6 +35,7 @@ void i2c_send(unsigned char address, unsigned char* data, int bytes) {
 	UCB0CTL1 |= UCTR; 			// Transmit mode
 	i2c_bytes_remaining = bytes;
 	i2c_data = data;
+	i2c_mode = DATA_SEND_MODE;
 	UCB0CTL1 |= UCTXSTT;		// Start
 }
 
@@ -36,29 +45,79 @@ static const unsigned char rgb_default_data[] = {0x80,
 		0xff, 0x00,  // 6, 7
 		0xaa, // 8
 };
-void turn_on_led() {
-	i2c_send(RGB_ADDRESS, rgb_default_data, 10);
+static const unsigned char lcd_default_data[] = {
+		0x80, 0x3f,
+		0x80, 0x3f,
+		0x80, 0x3f,
+		0x80, 0x0c,
+		0x80, 0x01,
+		0x80, 0x60,
+		0x80, LCD_TOP_LINE
+};
+void lcd_init() {
+	i2c_send(RGB_ADDRESS, (unsigned char*)rgb_default_data, 10);
+	LPM0;
+	i2c_send(LCD_ADDRESS, (unsigned char*)lcd_default_data, 14);
+	i2c_mode = LCD_INIT_MODE;
+	LPM0;
+	__delay_cycles(50000);
+}
+unsigned char lcd_addr;
+void lcd_write(unsigned char addr, char* string, int bytes) {
+	UCB0I2CSA = LCD_ADDRESS;
+	UCB0CTL1 |= UCTR;
+	i2c_bytes_remaining = ~bytes;
+	lcd_addr = addr;
+	i2c_data = (unsigned char*)string;
+	i2c_mode = LCD_WRITE_MODE;
+	UCB0CTL1 |= UCTXSTT;
+	LPM0;
 }
 
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;		// Stop watchdog timer
+    __enable_interrupt();
 
     P1DIR |= BIT0;
 
 	i2c_init();
-	turn_on_led();
-
-	for (;;);
+	lcd_init();
+	lcd_write(LCD_BOT_LINE, "I am a catlol", 10);
+	LPM0;
 }
 
 #pragma vector = USCIAB0TX_VECTOR
 __interrupt void USCIAB0TX_ISR(void) {
-	P1OUT ^= BIT0;
-	if (i2c_bytes_remaining == 0) {
-		UCB0CTL1 |= UCTXSTP;
-		return;
+//	P1OUT ^= BIT0;
+	switch (i2c_mode) {
+		case LCD_INIT_MODE:
+			__delay_cycles(50000);
+		case DATA_SEND_MODE:
+			if (i2c_bytes_remaining == 0) {
+				IFG2 &= ~UCB0TXIFG;
+				UCB0CTL1 |= UCTXSTP;
+				LPM0_EXIT;
+				return;
+			}
+			UCB0TXBUF = *i2c_data;
+			i2c_data++;
+			i2c_bytes_remaining--;
+			break;
+		case DATA_RECV_MODE:
+			break;
+		case LCD_WRITE_MODE:
+			if (i2c_bytes_remaining < 0) {
+				UCB0TXBUF = 0x80;
+				i2c_bytes_remaining = ~i2c_bytes_remaining;
+				return;
+			}
+			if (lcd_addr != LCD_NUL_ADDR) {
+				UCB0TXBUF = lcd_addr;
+				lcd_addr = LCD_NUL_ADDR;
+				return;
+			}
+			UCB0TXBUF = 0x40;
+			i2c_mode = DATA_SEND_MODE;
+			break;
 	}
-	UCB0TXBUF = *i2c_data;
-	i2c_data++;
-	i2c_bytes_remaining--;
 }
