@@ -8,14 +8,22 @@
 
 #define LMOTOR_DUTY TA1CCR1
 #define RMOTOR_DUTY TA1CCR2
-#define LMOTOR_PIN BIT1
-#define RMOTOR_PIN BIT4
+#define LMOTOR_EN BIT1
+#define RMOTOR_EN BIT4
+#define LMOTOR_HI BIT0
+#define LMOTOR_LO BIT2
+#define RMOTOR_HI BIT5
+#define RMOTOR_LO BIT3
+#define FORWARD 0
+#define MOTOR_REVERSE 1
 
 #define SDA_PIN BIT7
 #define SCL_PIN BIT6
 
 #define COMPASS_ADDRESS 0x1e
 int compass_x, compass_y, compass_z;
+
+#define ACCELEROMETER_ADDRESS 0x1d	// SDO tied to Vcc, 0x53 otherwise
 
 #define RGB_ADDRESS	0x62
 #define LCD_ADDRESS 0x3e
@@ -150,17 +158,42 @@ void compass_read() {
 	LPM0; // TODO: Remove
 }
 
-void pwm_init() {
+void set_left_motor(int speed, int direction) {
+	LMOTOR_DUTY = speed;
+	if (direction == FORWARD) {
+		P2OUT |= LMOTOR_HI;
+		P2OUT &= ~LMOTOR_LO;
+	} else {
+		P2OUT &= ~LMOTOR_HI;
+		P2OUT |= LMOTOR_LO;
+	}
+}
+
+void set_right_motor(int speed, int direction) {
+	RMOTOR_DUTY = speed;
+	if (direction == FORWARD) {
+		P2OUT |= RMOTOR_HI;
+		P2OUT &= ~RMOTOR_LO;
+	} else {
+		P2OUT &= ~RMOTOR_HI;
+		P2OUT |= RMOTOR_LO;
+	}
+}
+
+void motor_init() {
 	TA1CCR0 = 100;
 	TA1CCTL1 = OUTMOD_7;
 	TA1CCTL2 = OUTMOD_7;
 	LMOTOR_DUTY = 0xffff;		// Start as off
 	RMOTOR_DUTY = 0xffff;
-	P2DIR = LMOTOR_PIN | RMOTOR_PIN;
-	P2SEL = LMOTOR_PIN | RMOTOR_PIN;
+	P2OUT = 0;
+	P2DIR = 0xff;
+	P2SEL = LMOTOR_EN | RMOTOR_EN;
 	TA1CTL = TASSEL_2	// Use SMCLK (system clock)
 			| MC_1		// Timer counts up to TACCR0
 			| ID_3;		// Divide clock input by 8
+	set_left_motor(100, FORWARD);
+	set_right_motor(100, FORWARD);
 }
 
 int main(void) {
@@ -171,28 +204,26 @@ int main(void) {
     P1OUT = 0;
     P3REN = ~0;
 
-	i2c_init();
-	lcd_init();
+//	i2c_init();
+//	lcd_init();
 
-	pwm_init();
-	LMOTOR_DUTY = 10;
-	RMOTOR_DUTY = 90;
+	motor_init();
 
-	compass_init();
-
-	char buffer[16] = "                ";
-	for (;;) {
-		compass_read();
-		i2c_init();
-		int i;
-		for (i = 15; i != 0; i--) {
-			buffer[i] = ' ';
-		}
-		itoa(compass_x, buffer);
-		itoa(compass_y, buffer + 8);
-		lcd_write(LCD_TOP_LINE, buffer, 16);
-		__delay_cycles(100000);
-	}
+//	compass_init();
+//
+//	char buffer[16] = "                ";
+//	for (;;) {
+//		compass_read();
+//		i2c_init();
+//		int i;
+//		for (i = 15; i != 0; i--) {
+//			buffer[i] = ' ';
+//		}
+//		itoa(compass_x, buffer);
+//		itoa(compass_y, buffer + 8);
+//		lcd_write(LCD_TOP_LINE, buffer, 16);
+//		__delay_cycles(100000);
+//	}
 }
 
 #pragma vector = USCIAB0TX_VECTOR
