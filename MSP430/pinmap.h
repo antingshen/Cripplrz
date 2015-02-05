@@ -9,8 +9,10 @@
 
 // PORT 1
 #define LED     BIT0
-#define SCL_PIN BIT6    // Cannot be changed
-#define SDA_PIN BIT7    // Cannot be changed
+#define RXD_PIN BIT1
+#define TXD_PIN BIT2
+#define SCL_PIN BIT6
+#define SDA_PIN BIT7
 
 // PORT 2
 #define LMOTOR_HI BIT0

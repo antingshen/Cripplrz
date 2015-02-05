@@ -21,8 +21,4 @@ void motor_init();
 void set_left_motor(int speed, int direction);
 void set_right_motor(int speed, int direction);
 
-
-#define LMOTOR_DUTY TA1CCR1
-#define RMOTOR_DUTY TA1CCR2
-
 #endif /* MOTOR_H_ */

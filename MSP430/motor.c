@@ -1,7 +1,10 @@
 #include "motor.h"
 
+#define LMOTOR_DUTY TA1CCR1
+#define RMOTOR_DUTY TA1CCR2
+
 void motor_init() {
-    TA1CCR0 = 100;
+    TA1CCR0 = 99;
     TA1CCTL1 = OUTMOD_7;
     TA1CCTL2 = OUTMOD_7;
     LMOTOR_DUTY = 0xffff;   // Start as off
