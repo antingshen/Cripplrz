@@ -97,6 +97,7 @@ void compass_read() {
 
 #pragma vector = USCIAB0TX_VECTOR
 __interrupt void USCIAB0TX_ISR(void) {
+    __enable_interrupt();
 //    P1OUT ^= LED;
     switch (i2c_mode) {
         case LCD_INIT_MODE:
@@ -172,12 +173,14 @@ __interrupt void USCIAB0TX_ISR(void) {
 #pragma vector = USCIAB0RX_VECTOR
 __interrupt void USCIAB0RX_ISR(void) {
     if (UCB0STAT & UCNACKIFG) {
-        P1OUT |= BIT0;
+        P1OUT |= LED;
         LPM0;
         return;
-    } else {
-        P1OUT |= BIT0;
-        LPM0;
+    }
+    if (UCA0RXIFG & UCA0RXIE) {
+        if (uart_receive()) {
+            LPM0_EXIT;
+        }
         return;
     }
 }

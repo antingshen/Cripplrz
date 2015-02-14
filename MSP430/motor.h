@@ -1,5 +1,5 @@
 #include <msp430g2553.h>
-#include "pinmap.h"
+#include "config.h"
 
 #ifndef MOTOR_H_
 #define MOTOR_H_

@@ -1,5 +1,6 @@
 #include <msp430g2553.h>
-#include "pinmap.h"
+#include "config.h"
+#include "gps.h"
 
 #ifndef I2C_H_
 #define I2C_H_
