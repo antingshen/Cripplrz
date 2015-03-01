@@ -39,7 +39,7 @@ void i2c_init() {
     UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;   // I2C Master
     UCB0CTL1 |= UCSSEL_2;           // Use SMCLK
 
-    UCB0BR0 = 12;                   // 100 kHz I2C
+    UCB0BR0 = 96;                   // 100 kHz I2C
     UCB0I2CIE = UCNACKIE;           // interrupt if Nack received
 
     UCB0CTL1 &= ~UCSWRST;           // re-enable
@@ -97,8 +97,7 @@ void compass_read() {
 
 #pragma vector = USCIAB0TX_VECTOR
 __interrupt void USCIAB0TX_ISR(void) {
-    __enable_interrupt();
-//    P1OUT ^= LED;
+//    __enable_interrupt();
     switch (i2c_mode) {
         case LCD_INIT_MODE:
             __delay_cycles(50000);
@@ -173,7 +172,6 @@ __interrupt void USCIAB0TX_ISR(void) {
 #pragma vector = USCIAB0RX_VECTOR
 __interrupt void USCIAB0RX_ISR(void) {
     if (UCB0STAT & UCNACKIFG) {
-        P1OUT |= LED;
         LPM0;
         return;
     }

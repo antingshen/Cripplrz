@@ -13,7 +13,7 @@ int compass_x, compass_y, compass_z;
 /* Call before using any other i2c commands */
 void i2c_init();
 
-/* Wait 300ms after lcd power-up before init */
+/* Inits lcd and backlight. Has built in SW delay */
 void lcd_init();
 
 /* addr is LCD_TOP_LINE or LCD_BOT_LINE, plus optional character offset */

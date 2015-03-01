@@ -8,10 +8,11 @@
  */
 
 // PORT 1
-#define LED     BIT0
+#define GPS_PWR BIT0
 #define RXD_PIN BIT1
 #define TXD_PIN BIT2
 #define BUTTON  BIT3
+#define LED     BIT4
 #define SCL_PIN BIT6
 #define SDA_PIN BIT7
 

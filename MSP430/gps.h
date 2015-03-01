@@ -3,6 +3,9 @@
 #ifndef GPS_H_
 #define GPS_H_
 
+#define GPS_ON  (P1DIR &= ~GPS_PWR)
+#define GPS_OFF (P1DIR |= ~GPS_PWR)
+
 char display_buffer[32];
 int display_index;
 
