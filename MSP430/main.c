@@ -9,11 +9,11 @@
 void init() {
     WDTCTL = WDTPW | WDTHOLD;    // Stop watchdog timer
     __enable_interrupt();
-    BCSCTL1 = CALBC1_8MHZ;      // Set CPU clock
-    DCOCTL = CALDCO_8MHZ;
-    BCSCTL3 = XCAP_3;           // Crystal capacitance to 12.5pF
+    BCSCTL1 = CALBC1_16MHZ;      // Set CPU clock
+    DCOCTL = CALDCO_16MHZ;
     P3REN = ~0;
 
+    timer_init();
 //    gps_init();
 //    i2c_init();
 //    lcd_init();

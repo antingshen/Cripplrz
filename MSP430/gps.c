@@ -9,9 +9,9 @@ void gps_init() {
 
     UCA0CTL1 |= UCSSEL_2;   // SMCLK
 
-    UCA0BR0 = 52;
+    UCA0BR0 = 104;
     UCA0BR1 = 0;
-    UCA0MCTL = 0x10 | UCOS16;   // BRF0 = 1, Oversample
+    UCA0MCTL = 0x30 | UCOS16;   // BRF0 = 3, Oversample
     UCA0CTL1 &= ~UCSWRST;
 }
 
