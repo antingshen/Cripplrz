@@ -5,10 +5,16 @@
 #define MOTOR_H_
 
 #define FORWARD 0
-#define REVERSE 1
+#define REVERSE (~FORWARD)
 
 /* Starts motor timer and defaults to off */
 void motor_init();
+
+/**
+ * Current motor directions
+ */
+int left_motor_dir;
+int right_motor_dir;
 
 /**
  * speed is an int between 0 to 100, with 0 being off and 100 full power

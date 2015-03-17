@@ -28,6 +28,7 @@ void set_left_motor(int speed, int direction) {
         P2OUT &= ~LMOTOR_HI;
         P2OUT |= LMOTOR_LO;
     }
+    left_motor_dir = direction;
 }
 
 void set_right_motor(int speed, int direction) {
@@ -39,4 +40,5 @@ void set_right_motor(int speed, int direction) {
         P2OUT &= ~RMOTOR_HI;
         P2OUT |= RMOTOR_LO;
     }
+    right_motor_dir = direction;
 }

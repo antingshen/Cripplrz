@@ -97,7 +97,6 @@ void compass_read() {
 
 #pragma vector = USCIAB0TX_VECTOR
 __interrupt void USCIAB0TX_ISR(void) {
-//    __enable_interrupt();
     switch (i2c_mode) {
         case LCD_INIT_MODE:
             __delay_cycles(50000);

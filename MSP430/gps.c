@@ -2,8 +2,8 @@
 #include "gps.h"
 
 void gps_init() {
-    P1OUT &= ~GPS_PWR;
-    P1DIR |= GPS_PWR;
+//    P1OUT &= ~GPS_PWR;
+//    P1DIR |= GPS_PWR;
     P1SEL |= RXD_PIN | TXD_PIN;
     P1SEL2 |= RXD_PIN | TXD_PIN;
 
@@ -16,21 +16,50 @@ void gps_init() {
 }
 
 void gps_receive() {
-    GPS_ON;
+//    GPS_ON;
+    int i;
+    for (i = 0; i < 32; i++) {
+        display_buffer[i] = 63;
+    }
     IE2 |= UCA0RXIE;
     display_index = 0;
     LPM0;
-    GPS_OFF;
+//    GPS_OFF;
 }
+
 
 // Called from USCIAB0RX_ISR when UCA0RXIE is set
 inline int uart_receive() {
-    if (display_index == 32) {
-        IFG2 &= ~UCA0RXIFG;
-        IE2 &= ~UCA0RXIE;
-        return 1;
+    char data = UCA0RXBUF;
+
+    if (display_index != 0 && data == '$') {
+        display_index = 0;
+        return 0;
     }
-    display_buffer[display_index] = UCA0RXBUF;
+    switch (display_index) {
+        case 0:
+            if (data != '$') {
+                return 0;
+            }
+            break;
+        case 3:
+            if (data == 'T') {      // Filter $GPTXT
+                display_index = 0;
+                return 0;
+            }
+            break;
+        case 32:
+            IFG2 &= ~UCA0RXIFG;
+            IE2 &= ~UCA0RXIE;
+            return 1;
+        default:
+            break;
+    }
+    if (display_index >= 0) {
+        display_buffer[display_index] = data;
+    }
     display_index++;
     return 0;
 }
+
+
