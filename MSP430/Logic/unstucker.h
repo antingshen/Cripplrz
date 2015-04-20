@@ -4,7 +4,6 @@ include libraries for current reading here
 #include "../timer.h"
 #include "../motor.h"
 
-#define STUCK_THRESHOLD 200 //value for stall current
 #define ADJUSTMENT_VALUE 5 //how much to adjust a turn
 #define FORWARD_SECONDS 5 //how long to go forwards for
 #define TURN_TRIES 10 //how many times to try a turn before spinning
@@ -17,6 +16,8 @@ include libraries for current reading here
 
 #ifndef UNSTU_H_
 #define UNSTU_H_
+
+int is_stuck();
 
 void unstuck_procedure(int initial_left, int initial_right);
 
