@@ -1,3 +1,5 @@
+#include <msp430g2553.h>
+
 #ifndef TIMER_H_
 #define TIMER_H_
 
