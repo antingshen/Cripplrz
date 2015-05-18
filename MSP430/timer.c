@@ -17,7 +17,9 @@ void wait_seconds(int seconds) {
 }
 
 void wait_milis(int milis) {
-    __delay_cycles(16000*milis);
+    for (; milis > 0; milis--) {
+        __delay_cycles(15998);
+    }
 }
 
 #pragma vector=TIMER0_A0_VECTOR

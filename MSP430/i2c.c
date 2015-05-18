@@ -39,7 +39,8 @@ void i2c_init() {
     UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;   // I2C Master
     UCB0CTL1 |= UCSSEL_2;           // Use SMCLK
 
-    UCB0BR0 = 96;                   // 100 kHz I2C
+    UCB0BR1 = 1;
+    UCB0BR0 = 64;                   // 50 kHz I2C
     UCB0I2CIE = UCNACKIE;           // interrupt if Nack received
 
     UCB0CTL1 &= ~UCSWRST;           // re-enable
