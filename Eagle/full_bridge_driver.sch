@@ -7257,6 +7257,16 @@ Source: http://cache.national.com/ds/LM/LM2937-2.5.pdf</description>
 <wire x1="-2.54" y1="78.74" x2="-2.54" y2="73.66" width="0.1524" layer="91"/>
 <label x="-2.54" y="73.66" size="1.778" layer="95" rot="R90"/>
 </segment>
+<segment>
+<pinref part="D8" gate="1" pin="A"/>
+<wire x1="81.28" y1="-7.62" x2="81.28" y2="-10.16" width="0.1524" layer="91"/>
+<label x="81.28" y="-12.7" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="D4" gate="1" pin="A"/>
+<wire x1="81.28" y1="43.18" x2="81.28" y2="40.64" width="0.1524" layer="91"/>
+<label x="81.28" y="38.1" size="1.778" layer="95" rot="R90"/>
+</segment>
 </net>
 <net name="N$4" class="0">
 <segment>
@@ -7381,12 +7391,6 @@ Source: http://cache.national.com/ds/LM/LM2937-2.5.pdf</description>
 <label x="-40.64" y="91.44" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="N$2" class="0">
-<segment>
-<pinref part="D4" gate="1" pin="A"/>
-<wire x1="81.28" y1="43.18" x2="81.28" y2="40.64" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$1" class="0">
 <segment>
 <pinref part="IC2" gate="L298" pin="SEN_B"/>
@@ -7397,12 +7401,6 @@ Source: http://cache.national.com/ds/LM/LM2937-2.5.pdf</description>
 <pinref part="IC2" gate="L298" pin="SEN_A"/>
 <wire x1="17.78" y1="10.16" x2="15.24" y2="10.16" width="0.1524" layer="91"/>
 <junction x="17.78" y="7.62"/>
-</segment>
-</net>
-<net name="N$3" class="0">
-<segment>
-<pinref part="D8" gate="1" pin="A"/>
-<wire x1="81.28" y1="-7.62" x2="81.28" y2="-10.16" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="RMLO" class="0">
