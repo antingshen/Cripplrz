@@ -30,6 +30,19 @@ void goForwards(int left, int right)
     wait_seconds(FORWARD_SECONDS);
 }
 
+void wiggle() {
+    int i=0;
+    for(i; i < WIGGLE_TRIES; i++)
+    {
+        turnMotors(255, 255 / 4);
+        wait_seconds(WIGGLE_SECONDS);
+        turnMotors(255 / 4, 255);
+        wait_seconds(WIGGLE_SECONDS);
+        if(get_stall_current() <= STUCK_THRESHOLD)
+            break;
+    }
+}
+
 void unstuck_procedure(int initial_left, int initial_right)
 {
     int i=0, j=0;
@@ -43,10 +56,15 @@ void unstuck_procedure(int initial_left, int initial_right)
             goForwards(initial_left, initial_right);
         }
 
-        if(get_stall_current() > STUCK_THRESHOLD)
+        if(get_stall_current() > STUCK_THRESHOLD) 
             rotateMotors();
         else
-            return;
+            break;
+    }
+
+    if (get_stall_current() > STUCK_THRESHOLD) 
+    {
+        wiggle();
     }
 
     //we're stuck and dead and wat now
