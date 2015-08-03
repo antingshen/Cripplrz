@@ -12,6 +12,8 @@ include libraries for current reading here
 #define SPIN_SECONDS 5 //how long to spin for
 #define WIGGLE_SECONDS 1 //how long to wiggle for
 #define WIGGLE_TRIES 5
+#define TWIRL_SECONDS 1
+#define TWIRL_TRIES 3
 #define BACKWARD_SPEED -200
 #define BACKWARD_SECONDS 2 //how long to go backwards
 

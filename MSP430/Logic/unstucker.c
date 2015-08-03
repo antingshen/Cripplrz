@@ -43,8 +43,26 @@ void wiggle() {
     }
 }
 
-void unstuck_procedure(int initial_left, int initial_right)
-{
+void twirlInPlace() {
+    int i=0;
+    for(i; i < TWIRL_TRIES; i++) {
+        turnMotors(255, -255);
+        wait_seconds(TWIRL_SECONDS);
+        turnMotors(-255, 255);
+        wait_seconds(2 * TWIRL_SECONDS);
+        turnMotors(255, -255);
+        wait_seconds(TWIRL_SECONDS);
+        if(get_stall_current() <= STUCK_THRESHOLD)
+            break;
+        else {
+            //Move forwards
+            turnMotors(255, 255);
+            wait_seconds(SPIN_SECONDS);
+        }
+    }
+}
+
+void moveForwardsWithTurn(int initial_left, int initial_right) {
     int i=0, j=0;
     for(j; j < ROTATIONAL_TRIES; j++)
     {
@@ -61,10 +79,22 @@ void unstuck_procedure(int initial_left, int initial_right)
         else
             break;
     }
+}
+
+void unstuck_procedure(int initial_left, int initial_right)
+{
+    moveForwardsWithTurn(initial_left, initial_right);
 
     if (get_stall_current() > STUCK_THRESHOLD) 
     {
         wiggle();
+    }
+
+    if (get_stall_current() > STUCK_THRESHOLD)
+    {
+        twirlInPlace();
+        //Attempt to unstuck again
+        moveForwardsWithTurn(initial_left, initial_right);
     }
 
     //we're stuck and dead and wat now
