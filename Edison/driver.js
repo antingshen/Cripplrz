@@ -45,7 +45,7 @@ var determineMagnitude = function(diff) {
 
 var determineTurn = function(curHeading, finHeading, cb) {
     var cur = readCompass();
-    var fin = determineDiff(START_GPS, END_GPS);
+    var fin = determineDiff(getGPS(), END_GPS);
 
     console.log(curHeading + " to " + finHeading);
 
@@ -72,7 +72,7 @@ var determineTurn = function(curHeading, finHeading, cb) {
 
 var step = function() {
     var cur = readCompass();
-    var fin = determineDiff(START_GPS, END_GPS);
+    var fin = determineDiff(getGPS(), END_GPS);
 
     determineTurn(cur.heading, fin.heading, turnFromMagnitude);
 }

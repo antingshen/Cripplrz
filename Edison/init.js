@@ -1,0 +1,3 @@
+initCompass();
+initMotors();
+initMotorControl();

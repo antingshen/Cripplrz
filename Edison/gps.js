@@ -49,6 +49,10 @@ var readGPS(degree, minute) {
     return degree + (0.0166666667*minute);
 }
 
+var getGPS() {
+  return GPS_DATA;
+}
+
 initGPS(function(data) {
     GPS_DATA.latitude = data.latitude;
     GPS_DATA.longitude = data.longitude;
