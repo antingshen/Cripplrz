@@ -8,6 +8,8 @@ var RIGHT_PWM = 5;
 var RIGHT_HI = 7;
 var RIGHT_LO = 8;
 
+var SERVO_PWM = 6;
+
 var MOTOR_PINS = {
     digital: {},
     analog: {}
@@ -37,6 +39,8 @@ var initMotors = function() {
     MOTOR_PINS.analog.right_pwm = new m.Pwm(RIGHT_PWM);
     MOTOR_PINS.digital.right_hi = new m.Gpio(RIGHT_HI);
     MOTOR_PINS.digital.right_lo = new m.Gpio(RIGHT_LO);
+
+    MOTOR_PINS.analog.servo = new m.Pwm(SERVO_PWM); //Values can only write from .16 to .43
 
     for(var prop in MOTOR_PINS.digital) {
         MOTOR_PINS.digital[prop].dir(m.DIR_OUT);
@@ -88,4 +92,22 @@ var setLeftDirection = function(val) {
 var setRightDirection = function(val) {
     MOTOR_PINS.digital.right_hi.write(val > 0 ? 1 : 0);
     MOTOR_PINS.digital.right_lo.write(val < 0 ? 1 : 0);
+}
+
+var driveServo = function(val) {
+    if (val > .43) {
+        MOTOR_PINS.analog.servo.write(.43);
+    } else if (val < .16) {
+        MOTOR_PINS.analog.servo.write(.16);
+    } else {
+        MOTOR_PINS.analog.servo.write(val);
+    }
+}
+
+var resetParachute = function(val) {
+    driveServo(0);
+}
+
+var releaseParachute = function(val) {
+    driveServo(1);
 }
