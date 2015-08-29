@@ -16,6 +16,12 @@ var initGPS = function(cb) {
       } else {  
         console.log('open');  
         serialPort.on('data', function(data) {
+          if(lastRead + 1000 > (new Date).getTime()) {
+            return;
+          } else {
+            lastRead = (new Date).getTime();
+          }
+
           var gps = (data.toString().split("\n").filter(function(line) {
             return line.indexOf("GPGLL") > -1;
           }))[0].split(",");
