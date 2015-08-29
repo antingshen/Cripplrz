@@ -13,6 +13,13 @@ var END_GPS = {
     longitude: -118.73555599999997
 }
 
+var MEMORIAL_GPS = {
+    latitude: 37.8724111,
+    longitude: -122.2576996
+}
+
+var FINAL_GPS = END_GPS;
+
 var determineDiff = function(start, end) {
     var y = end.latitude - start.latitude;
     var x = end.longitude - start.longitude;
@@ -72,7 +79,7 @@ var determineTurn = function(curHeading, finHeading, cb) {
 
 var step = function() {
     var cur = readCompass();
-    var fin = determineDiff(getGPS(), END_GPS);
+    var fin = determineDiff(getGPS(), FINAL_GPS);
 
     determineTurn(cur.heading, fin.heading, turnFromMagnitude);
 }
