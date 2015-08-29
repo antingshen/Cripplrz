@@ -2,6 +2,7 @@ var m = require('mraa');
 var SerialPort = require("serialport").SerialPort;
 
 var GPS_DATA = {};
+var lastRead = 0;
 
 var initGPS = function(cb) {
     var uart = new m.Uart(0);
@@ -16,50 +17,61 @@ var initGPS = function(cb) {
       } else {  
         console.log('open');  
         serialPort.on('data', function(data) {
-          if(lastRead + 1000 > (new Date).getTime()) {
+          if(lastRead + 5000 > (new Date).getTime() || !data) {
             return;
           } else {
             lastRead = (new Date).getTime();
           }
 
           var gps = (data.toString().split("\n").filter(function(line) {
-            return line.indexOf("GPGLL") > -1;
-          }))[0].split(",");
+            return line.indexOf("GPGGA") > -1;
+          }))[0];
 
-          console.log(gps);
+          if(gps) {
+            gps = gps.split(",");
 
-          var latitudeRaw = gps[1].match(/(\d{2,3})(\d{2}\.\d+)/);
-          var longitudeRaw = gps[3].match(/(\d{2,3})(\d{2}\.\d+)/);
+            //console.log(data.toString());
 
-          if(latitudeRaw && longitudeRaw) {
-              var latitude = {
-                degree: latitudeRaw[1],
-                minute: latitudeRaw[2],
-                direction: gps[2]
-              };
+            //console.log(gps);
 
-              var longitude = {
-                degree: longitudeRaw[1],
-                minute: longitudeRaw[2],
-                direction: gps[4]
-              };
+            var latitudeRaw = gps[2].match(/(\d{2,3})(\d{2}\.\d+)/);
+            var longitudeRaw = gps[4].match(/(\d{2,3})(\d{2}\.\d+)/);
+            var altitude = gps[9];
 
-              cb({latitude: latitude, longitude: longitude});
+
+            if(latitudeRaw && longitudeRaw) {
+                var latitude = {
+                  degree: latitudeRaw[1],
+                  minute: latitudeRaw[2],
+                  direction: gps[2]
+                };
+
+                var longitude = {
+                  degree: longitudeRaw[1],
+                  minute: longitudeRaw[2],
+                  direction: gps[4]
+                };
+
+                console.log({latitude: latitude, longitude: longitude, altitude: altitude});
+
+                cb({latitude: latitude, longitude: longitude, altitude: altitude});
+              }
             }
         });  
       }  
     });
 }
 
-var readGPS(degree, minute) {
+var readGPS = function(degree, minute) {
     return degree + (0.0166666667*minute);
 }
 
-var getGPS() {
+var getGPS = function() {
   return GPS_DATA;
 }
 
 initGPS(function(data) {
     GPS_DATA.latitude = data.latitude;
     GPS_DATA.longitude = data.longitude;
+    GPS_DATA.altitude = data.altitude;
 })
