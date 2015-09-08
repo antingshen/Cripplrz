@@ -15,6 +15,10 @@ var MOTOR_PINS = {
     analog: {}
 };
 
+var MAX_SERVO_VAL = .30; //Experimental max is .43 but we tailor .30 to the orientation of the servo
+var MIN_SERVO_VAL = .22; //Experimental min is .16 but we tailor .22 to the orientation of the servo
+
+
 var mapRange = function(value, low1, high1, low2, high2) {
     if(value > 0)
         return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
@@ -98,10 +102,10 @@ var setRightDirection = function(val) {
 }
 
 var driveServo = function(val) {
-    if (val > .43) {
-        MOTOR_PINS.analog.servo.write(.43);
-    } else if (val < .16) {
-        MOTOR_PINS.analog.servo.write(.16);
+    if (val > MAX_SERVO_VAL) {
+        MOTOR_PINS.analog.servo.write(MAX_SERVO_VAL);
+    } else if (val < MIN_SERVO_VAL) {
+        MOTOR_PINS.analog.servo.write(MIN_SERVO_VAL);
     } else {
         MOTOR_PINS.analog.servo.write(val);
     }

@@ -43,8 +43,8 @@ var readCompass = function(i) {
 
     var direction = Math.atan2(y*0.92, x*0.92);
 
-    if (direction < 0)
-        direction += 2 * Math.PI;
+    /*if (direction < 0)
+        direction += 2 * Math.PI;*/
 
     console.log(b[0], b[1], b[2], b[3], b[4], b[5]);
 
@@ -57,58 +57,6 @@ var readCompass = function(i) {
         heading: direction
     };
 }
-
-var m = require('mraa');
-var SerialPort = require("serialport").SerialPort;
-
-var GPS_DATA = {};
-
-var initGPS = function(cb) {
-    var uart = new m.Uart(0);
-
-    var serialPort = new SerialPort(uart.getDevicePath(), {  
-      baudrate: 9600  
-    }, false);
-
-    serialPort.open(function (error) {
-      if (error) {  
-        console.log('Failed to open: '+error);
-      } else {  
-        console.log('open');  
-        serialPort.on('data', function(data) {
-          var gps = (data.toString().split("\n").filter(function(line) {
-            return line.indexOf("GPGLL") > -1;
-          }))[0].split(",");
-
-          console.log(gps);
-
-          var latitudeRaw = gps[1].match(/(\d{2,3})(\d{2}\.\d+)/);
-          var longitudeRaw = gps[3].match(/(\d{2,3})(\d{2}\.\d+)/);
-
-          if(latitudeRaw && longitudeRaw) {
-              var latitude = {
-                degree: latitudeRaw[1],
-                minute: latitudeRaw[2],
-                direction: gps[2]
-              };
-
-              var longitude = {
-                degree: longitudeRaw[1],
-                minute: longitudeRaw[2],
-                direction: gps[4]
-              };
-
-              cb({latitude: latitude, longitude: longitude});
-            }
-        });  
-      }  
-    });
-}
-
-var readGPS = function(degree, minute) {
-    return degree + (0.0166666667*minute);
-}
-
 var m = require('mraa');
 
 var LEFT_PWM = 3;
@@ -119,10 +67,16 @@ var RIGHT_PWM = 5;
 var RIGHT_HI = 7;
 var RIGHT_LO = 8;
 
+var SERVO_PWM = 6;
+
 var MOTOR_PINS = {
     digital: {},
     analog: {}
 };
+
+var MAX_SERVO_VAL = .30; //Experimental max is .43 but we tailor .30 to the orientation of the servo
+var MIN_SERVO_VAL = .22; //Experimental min is .16 but we tailor .22 to the orientation of the servo
+
 
 var mapRange = function(value, low1, high1, low2, high2) {
     if(value > 0)
@@ -149,6 +103,8 @@ var initMotors = function() {
     MOTOR_PINS.digital.right_hi = new m.Gpio(RIGHT_HI);
     MOTOR_PINS.digital.right_lo = new m.Gpio(RIGHT_LO);
 
+    MOTOR_PINS.analog.servo = new m.Pwm(SERVO_PWM); //Values can only write from .16 to .43
+
     for(var prop in MOTOR_PINS.digital) {
         MOTOR_PINS.digital[prop].dir(m.DIR_OUT);
     }
@@ -156,6 +112,9 @@ var initMotors = function() {
     for(var prop in MOTOR_PINS.analog) {
         MOTOR_PINS.analog[prop].enable(true);
     }
+
+    setRightDirection(0);
+    setLeftDirection(0);
 }
 
 var driveLeftMotor = function(speed) {
@@ -192,15 +151,32 @@ var brakeRightMotor = function() {
 }
 
 var setLeftDirection = function(val) {
-    MOTOR_PINS.digital.left_hi.write(val > 0 ? 1 : 0);
+    MOTOR_PINS.digital.left_hi.write(val >= 0 ? 1 : 0);
     MOTOR_PINS.digital.left_lo.write(val < 0 ? 1 : 0);
 }
 
 var setRightDirection = function(val) {
-    MOTOR_PINS.digital.right_hi.write(val > 0 ? 1 : 0);
+    MOTOR_PINS.digital.right_hi.write(val >= 0 ? 1 : 0);
     MOTOR_PINS.digital.right_lo.write(val < 0 ? 1 : 0);
 }
 
+var driveServo = function(val) {
+    if (val > MAX_SERVO_VAL) {
+        MOTOR_PINS.analog.servo.write(MAX_SERVO_VAL);
+    } else if (val < MIN_SERVO_VAL) {
+        MOTOR_PINS.analog.servo.write(MIN_SERVO_VAL);
+    } else {
+        MOTOR_PINS.analog.servo.write(val);
+    }
+}
+
+var resetParachute = function(val) {
+    driveServo(0);
+}
+
+var releaseParachute = function(val) {
+    driveServo(1);
+}
 var CONFIGURATION = {
     timeStep: 100,
     motorStep: 10,
@@ -262,7 +238,6 @@ var driveRightMotorStepped = function() {
         CONFIGURATION.currentRight = spd;
     }
 }
-
 var m = require('mraa');
 
 var DIR_LEFT = 0,
@@ -277,6 +252,13 @@ var END_GPS = {
     latitude: 40.874722,
     longitude: -118.73555599999997
 }
+
+var MEMORIAL_GPS = {
+    latitude: 37.8724111,
+    longitude: -122.2576996
+}
+
+var FINAL_GPS = END_GPS;
 
 var determineDiff = function(start, end) {
     var y = end.latitude - start.latitude;
@@ -297,20 +279,20 @@ var determineDiff = function(start, end) {
 var turnFromMagnitude = function(direction, magnitude) {
     if(direction == DIR_LEFT) {
         console.log("Turning left with " + magnitude + " : " + determineMagnitude(magnitude) + ", 100");
-        driveMotors(determineMagnitude(magnitude), 100);
+        //driveMotors(determineMagnitude(magnitude), 100);
     } else {
         console.log("Turning right with " + magnitude + " : " + "100, " + determineMagnitude(magnitude));
-        driveMotors(100, determineMagnitude(magnitude));
+        //driveMotors(100, determineMagnitude(magnitude));
     }
 }
 
 var determineMagnitude = function(diff) {
-    return (0+(Math.PI - diff)*30/Math.PI);
+    return (70+(Math.PI - diff)*30/Math.PI);
 }
 
 var determineTurn = function(curHeading, finHeading, cb) {
     var cur = readCompass();
-    var fin = determineDiff(START_GPS, END_GPS);
+    var fin = determineDiff(getGPS(), END_GPS);
 
     console.log(curHeading + " to " + finHeading);
 
@@ -337,11 +319,87 @@ var determineTurn = function(curHeading, finHeading, cb) {
 
 var step = function() {
     var cur = readCompass();
-    var fin = determineDiff(START_GPS, END_GPS);
+    var fin = determineDiff(getGPS(), FINAL_GPS);
 
     determineTurn(cur.heading, fin.heading, turnFromMagnitude);
 }
+var m = require('mraa');
+var SerialPort = require("serialport").SerialPort;
 
+var GPS_DATA = {};
+var lastRead = 0;
+
+var initGPS = function(cb) {
+    var uart = new m.Uart(0);
+
+    var serialPort = new SerialPort(uart.getDevicePath(), {  
+      baudrate: 9600  
+    }, false);
+
+    serialPort.open(function (error) {
+      if (error) {  
+        console.log('Failed to open: '+error);
+      } else {  
+        console.log('open');  
+        serialPort.on('data', function(data) {
+          if(lastRead + 5000 > (new Date).getTime() || !data) {
+            return;
+          } else {
+            lastRead = (new Date).getTime();
+          }
+
+          var gps = (data.toString().split("\n").filter(function(line) {
+            return line.indexOf("GPGGA") > -1;
+          }))[0];
+
+          if(gps) {
+            gps = gps.split(",");
+
+            //console.log(data.toString());
+
+            //console.log(gps);
+
+            var latitudeRaw = gps[2].match(/(\d{2,3})(\d{2}\.\d+)/);
+            var longitudeRaw = gps[4].match(/(\d{2,3})(\d{2}\.\d+)/);
+            var altitude = gps[9];
+
+
+            if(latitudeRaw && longitudeRaw) {
+                var latitude = {
+                  degree: latitudeRaw[1],
+                  minute: latitudeRaw[2],
+                  direction: gps[2]
+                };
+
+                var longitude = {
+                  degree: longitudeRaw[1],
+                  minute: longitudeRaw[2],
+                  direction: gps[4]
+                };
+
+                console.log({latitude: latitude, longitude: longitude, altitude: altitude});
+
+                cb({latitude: latitude, longitude: longitude, altitude: altitude});
+              }
+            }
+        });  
+      }  
+    });
+}
+
+var readGPS = function(degree, minute) {
+    return degree + (0.0166666667*minute);
+}
+
+var getGPS = function() {
+  return GPS_DATA;
+}
+
+initGPS(function(data) {
+    GPS_DATA.latitude = data.latitude;
+    GPS_DATA.longitude = data.longitude;
+    GPS_DATA.altitude = data.altitude;
+})
 initCompass();
 initMotors();
 initMotorControl();
