@@ -49,6 +49,9 @@ var initMotors = function() {
     for(var prop in MOTOR_PINS.analog) {
         MOTOR_PINS.analog[prop].enable(true);
     }
+
+    setRightDirection(0);
+    setLeftDirection(0);
 }
 
 var driveLeftMotor = function(speed) {
@@ -85,12 +88,12 @@ var brakeRightMotor = function() {
 }
 
 var setLeftDirection = function(val) {
-    MOTOR_PINS.digital.left_hi.write(val > 0 ? 1 : 0);
+    MOTOR_PINS.digital.left_hi.write(val >= 0 ? 1 : 0);
     MOTOR_PINS.digital.left_lo.write(val < 0 ? 1 : 0);
 }
 
 var setRightDirection = function(val) {
-    MOTOR_PINS.digital.right_hi.write(val > 0 ? 1 : 0);
+    MOTOR_PINS.digital.right_hi.write(val >= 0 ? 1 : 0);
     MOTOR_PINS.digital.right_lo.write(val < 0 ? 1 : 0);
 }
 
