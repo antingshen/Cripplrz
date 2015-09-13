@@ -4,6 +4,8 @@ var SerialPort = require("serialport").SerialPort;
 var GPS_DATA = {};
 var lastRead = 0;
 
+var DUMMY_DATA = {};
+
 var initGPS = function(cb) {
     var uart = new m.Uart(0);
 
@@ -68,6 +70,19 @@ var readGPS = function(degree, minute) {
 
 var getGPS = function() {
   return GPS_DATA;
+}
+
+//Function for testing parachute code
+var setGPSTestData = function(lat, lon, alti) {
+  DUMMY_DATA.latitude = lat;
+  DUMMY_DATA.longitude = lon;
+  DUMMY_DATA.altitude = alti;
+  console.log("Setting dummy data to:" + lat + " " + lon + " " + alti);
+}
+
+//Function for testing parachhute code
+var getGPSTest = function() {
+  return DUMMY_DATA;
 }
 
 initGPS(function(data) {
