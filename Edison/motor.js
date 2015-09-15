@@ -16,7 +16,7 @@ var MOTOR_PINS = {
 };
 
 var MAX_SERVO_VAL = .30; //Experimental max is .43 but we tailor .30 to the orientation of the servo
-var MIN_SERVO_VAL = .225; //Experimental min is .16 but we tailor .23 to the orientation of the servo
+var MIN_SERVO_VAL = .21; //Experimental min is .16 but we tailor .22 to the orientation of the servo
 
 
 var mapRange = function(value, low1, high1, low2, high2) {
