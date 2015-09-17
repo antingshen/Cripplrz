@@ -54,6 +54,9 @@ var initGPS = function(cb) {
                   direction: gps[4]
                 };
 
+                latitude = readGPS(latitude.degree, latitude.minute);
+                longitude = readGPS(longitude.degree, longitude.minut);
+
                 console.log({latitude: latitude, longitude: longitude, altitude: altitude});
 
                 cb({latitude: latitude, longitude: longitude, altitude: altitude});
