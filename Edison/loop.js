@@ -1,7 +1,10 @@
 var mainLoop = function() {
     setTimeout(function() {
-        isStuck();
-        step();
-        mainLoop();
+        if(isStuck()) {
+            unstuckProcedure(mainLoop);
+        } else {
+            step();
+            mainLoop();
+        }
     }, 1000)
 }

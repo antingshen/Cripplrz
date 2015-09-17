@@ -96,6 +96,10 @@ var wiggle = function() {
     }
 }
 
+var unstuckProcedure = function(cb) {
+    unstuckProcedureClockwise(cb);
+}
+
 var unstuckProcedureClockwise = function(cb) {
     console.log("Initiated unstuckProcedureClockwise");
     UNSTUCKER_VARIABLES.rotateCount = 0;
