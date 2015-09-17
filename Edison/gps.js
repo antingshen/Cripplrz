@@ -32,7 +32,7 @@ var initGPS = function(cb) {
           if(gps) {
             gps = gps.split(",");
 
-            //console.log(data.toString());
+            console.log(data.toString());
 
             //console.log(gps);
 
@@ -55,7 +55,7 @@ var initGPS = function(cb) {
                 };
 
                 latitude = readGPS(latitude.degree, latitude.minute);
-                longitude = readGPS(longitude.degree, longitude.minut);
+                longitude = readGPS(longitude.degree, longitude.minute);
 
                 console.log({latitude: latitude, longitude: longitude, altitude: altitude});
 
@@ -68,7 +68,7 @@ var initGPS = function(cb) {
 }
 
 var readGPS = function(degree, minute) {
-    return degree + (0.0166666667*minute);
+    return Number(degree) + (0.0166666667*Number(minute));
 }
 
 var getGPS = function() {

@@ -42,14 +42,14 @@ var determineDiff = function(start, end) {
 
 var turnFromMagnitude = function(direction, magnitude) {
     if(direction === DIR_LEFT) {
-        console.log("Turning left with " + magnitude + " : " + determineMagnitude(magnitude) + ", 100");
-        //driveMotors(determineMagnitude(magnitude), FASTER_WHEEL_SPEED );
+        SDLog("Turning left with " + magnitude + " : " + determineMagnitude(magnitude) + ", 100");
+        driveMotors(determineMagnitude(magnitude), FASTER_WHEEL_SPEED );
     } else if(direction === DIR_RIGHT) {
-        console.log("Turning right with " + magnitude + " : " + "100, " + determineMagnitude(magnitude));
-        //driveMotors(FASTER_WHEEL_SPEED, determineMagnitude(magnitude));
+        SDLog("Turning right with " + magnitude + " : " + "100, " + determineMagnitude(magnitude));
+        driveMotors(FASTER_WHEEL_SPEED, determineMagnitude(magnitude));
     } else {
-        console.log("Going forward at magnitude speed!");
-        //driveMotors(FASTER_WHEEL_SPEED, FASTER_WHEEL_SPEED);
+        SDLog("Going forward at magnitude speed!");
+        driveMotors(FASTER_WHEEL_SPEED, FASTER_WHEEL_SPEED);
     }
 }
 
@@ -62,6 +62,7 @@ var determineTurn = function(curHeading, finHeading, cb) {
     var fin = determineDiff(getGPS(), END_GPS);
 
     console.log(curHeading + " to " + finHeading);
+    SDLog(curHeading + " to " + finHeading);
 
     if(Math.abs(finHeading - curHeading) < Math.PI/4) {
         cb(DIR_FORWARD);
@@ -91,6 +92,7 @@ var step = function() {
     if(curGPS.latitude && curGPS.longitude) {
         var cur = readCompass();
         var fin = determineDiff(curGPS, FINAL_GPS);
+        SDLog("Compass: " + JSON.stringify(cur) + "; GPS: " + JSON.stringify(curGPS));
         determineTurn(cur.heading, fin.heading, turnFromMagnitude);
     }
 }

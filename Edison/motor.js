@@ -5,8 +5,8 @@ var LEFT_HI = 12;
 var LEFT_LO = 13;
 
 var RIGHT_PWM = 5;
-var RIGHT_HI = 7;
-var RIGHT_LO = 8;
+var RIGHT_HI = 8;
+var RIGHT_LO = 7;
 
 var SERVO_PWM = 6;
 
@@ -111,10 +111,10 @@ var driveServo = function(val) {
     }
 }
 
-var resetParachute = function(val) {
+var resetParachute = function() {
     driveServo(0);
 }
 
-var releaseParachute = function(val) {
+var releaseParachute = function() {
     driveServo(1);
 }

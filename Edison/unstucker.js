@@ -45,7 +45,7 @@ var changeGPSValues = function() {
         {latitude : 110, longitude : 50, altitude : 0},
         {latitude : 110, longitude : 60, altitude : 0},
         {latitude : 115, longitude : 65, altitude : 0},
-        {latitude : 125, longitude : 55, altitude : 0},
+        {latitude : 125, longitude : 55, altitude : 0}
     ];
 }
 
@@ -62,27 +62,27 @@ var resampleGPSValues = function() {
 
 var rotateClockwise = function() {
     console.log("Rotating clockwise");
-    //driveMotors(100, -100);
+    driveMotors(100, -100);
 }
 
 var rotateCounterClockwise = function() {
     console.log("Rotating counter clockwise");
-    //driveMotors(-100, 100);
+    driveMotors(-100, 100);
 }
 
 var goBackwards = function() {
     console.log("Moving backwards");
-    //driveMotors(-100, -100);
+    driveMotors(-100, -100);
 }
 
 var goForwards = function() {
     console.log("Moving forwards");
-    //driveMotors(100, 100);
+    driveMotors(100, 100);
 }
 
 var stopMotors = function() {
     console.log("Braking");
-    //driveMotors(0, 0);
+    driveMotors(0, 0);
 }
 
 var wiggle = function() {
@@ -127,7 +127,7 @@ var unstuckProcedureClockwise = function(cb) {
             } else {
                 rotateClockwise();
                 setTimeout(stopMotors, 500);
-                //wiggle();
+                wiggle();
                 UNSTUCKER_VARIABLES.rotateCount += 1;
             }
         }, 15000);
@@ -159,7 +159,7 @@ var unstuckProcedureCounterClockwise = function(cb) {
             } else {
                 rotateCounterClockwise();
                 setTimeout(stopMotors, 500);
-                //wiggle();
+                wiggle();
                 UNSTUCKER_VARIABLES.rotateCount += 1;
             }
         }, 15000);

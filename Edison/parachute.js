@@ -4,20 +4,22 @@ var fs = require('fs');
 var PARACHUTE_VARIABLES = {
     GPS_THRESHOLD_ALTITUDE : 100, // Needs to be adjusted: threshold for difference between previous and current gps reading values for altitude
     GPS_THRESHOLD_LAT_LON : 100, // Needs to be adjusted: threshold for difference between previous and current gps reading values for latitude and longitude
-    GPS_AVERAGE_THRESHOLD_ALTITUDE : 50, // Needs to be adjusted: threshold for difference between average of last 10 gps readings and current gps reading
-    GPS_AVERAGE_THRESHOLD_LAT_LON : 10, // Needs to be adjusted: threshold below which we believe our lat lon values are not changing enough: we are stuck
-    //ACCELEROMETER_THRESHOLD = 10, //Needs to be adjusted: threshold for difference between accelerometer values
+    GPS_AVERAGE_THRESHOLD_ALTITUDE : 20, // Needs to be adjusted: threshold for difference between average of last 10 gps readings and current gps reading
+    GPS_AVERAGE_THRESHOLD_LAT_LON : 3, // Needs to be adjusted: threshold below which we believe our lat lon values are not changing enough: we are stuck
     TOTAL_VALUES_TO_STORE : 10,
+    
     RELEASE_UNDER_VALUE : 1200,
-    IGNORE_CURR_GPS_BELOW : 700, //Value under which we consider GPS readings to be too low and incorrect data
-    RUNNING_TEST_CODE : 0, //Gets set to 1 if we run testParachute()
+    IGNORE_CURR_GPS_BELOW : 1000, //Value under which we consider GPS readings to be too low and incorrect data
     LANDED : 0,
-    TIME_TO_WAIT_BEFORE_SAMPLING : 900000
+    BEGIN_CHECK_SERVO : 0,
+    TIME_TO_WAIT_BEFORE_SAMPLING : 0,
+    RUNNING_TEST_CODE : 0 //Gets set to 1 if we run testParachute()
 }
 
 var initParachute = function(cb) {
     readParachuteReleased(function(val) {
         if(val === '1') {
+            console.log(val);
             cb();
         } else {
             setTimeout(function() {
@@ -25,7 +27,7 @@ var initParachute = function(cb) {
             }, PARACHUTE_VARIABLES.TIME_TO_WAIT_BEFORE_SAMPLING);
         }
     })
-});
+}
 
 var checkServo = function(cb) {
     var readyToRelease = false;
@@ -33,39 +35,51 @@ var checkServo = function(cb) {
     var idToClear;
     var cb = cb||releaseParachute;
 
-    var interval = setInterval(function() {
-        if (SAMPLING_VARIABLES.buffering) {
-            return;
-        }
-
-        if (PARACHUTE_VARIABLES.RUNNING_TEST_CODE) {
-            currGPSAlt = getGPSTest().altitude;
+    readParachuteReleased(function(val) {
+        if(val === '1') {
+            PARACHUTE_VARIABLES.LANDED = 1;
+            cb();
         } else {
-            currGPSAlt = getGPS().altitude;
-        }
+            var interval = setInterval(function() {
+                if (SAMPLING_VARIABLES.buffering) {
+                    return;
+                }
 
-        console.log("Waiting to get below PARACHUTE_VARIABLES.RELEASE_UNDER_VALUE. Current value is: " + currGPSAlt);
+                if (PARACHUTE_VARIABLES.RUNNING_TEST_CODE) {
+                    currGPSAlt = getGPSTest().altitude;
+                } else {
+                    currGPSAlt = getGPS().altitude;
+                }
 
-        if (currGPSAlt < PARACHUTE_VARIABLES.RELEASE_UNDER_VALUE && currGPSAlt > PARACHUTE_VARIABLES.IGNORE_CURR_GPS_BELOW) {
-            console.log("We think we are on the ground. Start other checks.");
-            if (!idToClear) {
-                idToClear = setInterval(sampleGPS, 2000);
-            }
-            if (!(Math.abs(SAMPLING_VARIABLES.gpsAltitudeAverage - currGPSAlt) > PARACHUTE_VARIABLES.GPS_AVERAGE_THRESHOLD_ALTITUDE || SAMPLING_VARIABLES.gpsValues.length < PARACHUTE_VARIABLES.TOTAL_VALUES_TO_STORE)) {
-                clearInterval(idToClear);
-                //sampleAccelerometer(function(val) {
-                //    if(val) {
-                //        clearInterval(idToClear);
-                        console.log("Releasing Parachute");
+                //Don't start checking for altitude values until we are in the air.
+                /*if (!PARACHUTE_VARIABLES.BEGIN_CHECK_SERVO && currGPSAlt < PARACHUTE_VARIABLES.RELEASE_UNDER_VALUE + 500) {
+                    console.log("Have not lifted off yet");
+                    return;
+                } else {
+                    console.log("Switched");
+                    PARACHUTE_VARIABLES.BEGIN_CHECK_SERVO = 1;
+                }*/
+
+                console.log("Waiting to get below PARACHUTE_VARIABLES.RELEASE_UNDER_VALUE. Current value is: " + currGPSAlt);
+
+                if (currGPSAlt < PARACHUTE_VARIABLES.RELEASE_UNDER_VALUE && currGPSAlt > PARACHUTE_VARIABLES.IGNORE_CURR_GPS_BELOW) {
+                    console.log("We think we are on the ground. Start other checks.");
+                    if (!idToClear) {
+                        idToClear = setInterval(sampleGPS, 5000);
+                    }
+                    if (!(Math.abs(SAMPLING_VARIABLES.gpsAltitudeAverage - currGPSAlt) > PARACHUTE_VARIABLES.GPS_AVERAGE_THRESHOLD_ALTITUDE || SAMPLING_VARIABLES.gpsValues.length < PARACHUTE_VARIABLES.TOTAL_VALUES_TO_STORE)) {
+                        clearInterval(idToClear);
                         clearInterval(interval);
+                        console.log("Releasing Parachute");
                         PARACHUTE_VARIABLES.LANDED = 1;
                         writeToParachuteReleased(1);
+                        releaseParachute();
                         cb();
-                //    }
-                //})
-            }
+                    }
+                }
+            }, 5000);
         }
-    }, 2000)
+    });
 }
 
 var SAMPLING_VARIABLES = {
@@ -76,7 +90,7 @@ var SAMPLING_VARIABLES = {
     gpsLatTotal : 0,
     gpsAltitudeAverage : 0,
     gpsAltitudeTotal : 0,
-    buffering : 0,
+    buffering : 0
 }
 var sampleGPS = function() {
     console.log("Calling sampleGPS");
@@ -100,6 +114,11 @@ var sampleGPS = function() {
         currVal = copyGPSObject(getGPS());
     }
     var poppedVal;
+
+    //Do not accept any undefined values
+    if(!currVal.longitude || !currVal.latitude || !currVal.altitude) {
+        return;
+    }
 
     if (!PARACHUTE_VARIABLES.LANDED) {
         if (Math.abs(currVal.altitude - prevVal.altitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_ALTITUDE) {
@@ -146,20 +165,32 @@ var bufferGPSValues = function() {
             bufferDone = 1;
             clearInterval(bufferID);
             return;
-        } else {
-            counter += 1;
         }
 
         console.log("Grabbing entry for GPS buffer.");
         //console.log("Counter: " + counter);
+        var readyToPush;
         if (PARACHUTE_VARIABLES.RUNNING_TEST_CODE) {
-            GPSbuffer.push(copyGPSObject(getGPSTest()));
+            readyToPush = copyGPSObject(getGPSTest());
+            
+            if(!readyToPush.longitude || !readyToPush.latitude || !readyToPush.altitude) {
+                return;
+            }
+
+            GPSbuffer.push(readyToPush);
             console.log("Buffer after V");
             console.log(GPSbuffer);
         } else {
-            GPSbuffer.push(copyGPSObject(getGPS()));
+            readyToPush = copyGPSObject(getGPS());
+            
+            if(!readyToPush.longitude || !readyToPush.latitude || !readyToPush.altitude) {
+                return;
+            }
+
+            GPSbuffer.push(readyToPush);
         }
-    }, 2000);
+        counter += 1;
+    }, 5000);
 
     //If the values in our buffer are valid, we add them to our real list of values. Otherwise, we start over.
     var checkerID = setInterval(function() {
@@ -179,7 +210,7 @@ var bufferGPSValues = function() {
             SAMPLING_VARIABLES.buffering = 0;
             clearInterval(checkerID);
         }    
-    }, 2000);
+    }, 5000);
     return;
 }
 
@@ -188,12 +219,14 @@ var checkValidBufferValues = function(listOfPotentialValues) {
     for (var i = 0; i < listOfPotentialValues.length; i++) {
         for (var j = 0; j < listOfPotentialValues.length; j++) {
             if (i != j) {
+                var currVal = listOfPotentialValues[i];
+                var otherVal = listOfPotentialValues[j];
                 if (!PARACHUTE_VARIABLES.LANDED) {
-                    if (Math.abs(currVal.altitude - prevVal.altitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_ALTITUDE) {
+                    if (Math.abs(currVal.altitude - otherVal.altitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_ALTITUDE) {
                         return false;
                     }
                 } else {
-                    if (Math.abs(currVal.longitude - prevVal.longitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_LAT_LON || Math.abs(currVal.latitude - prevVal.latitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_LAT_LON) {
+                    if (Math.abs(currVal.longitude - otherVal.longitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_LAT_LON || Math.abs(currVal.latitude - otherVal.latitude) > PARACHUTE_VARIABLES.GPS_THRESHOLD_LAT_LON) {
                         return false;
                     }
                 }
@@ -211,46 +244,32 @@ var copyGPSObject = function(objectToCopy) {
     return copy;
 }
 
+PARACHUTE_FILE_WRITER = {
+    fs : require('fs')
+}
+
 var writeToParachuteReleased = function(text) {
-    fs.writeFile('/home/root/parachuteReleased', text, function(err) {
+    PARACHUTE_FILE_WRITER.fs.writeFile('/home/root/parachuteReleased', text, function(err) {
         if (err) throw err;
     });
 }
 
 var readParachuteReleased = function(cb) {
-    fs.readFile('/home/root/parachuteReleased', function(err, data) {
-        if(err) throw err;
-        cb(data.toString());
+    PARACHUTE_FILE_WRITER.fs.readFile('/home/root/parachuteReleased', function(err, data) {
+        if(err) cb('0');
+        else cb(data.toString());
     })
 }
 
-/*var sampleAccelerometer = function(cb) {
-    var counter = 0;
-    var maxIterations = 5;
-    var timeBetweenReadings = 10000;
-    var prevVal = getAccelerometer();
-    var currVal;
-
-    var interval = setInterval(function() {
-        if(counter > maxIterations) {
-            clearInterval(interval);
-            return true;
-        }
-
-        currVal = getAccelerometer();
-        if (Math.abs(currVal - prevVal) > ACCELEROMETER_THRESHOLD) {
-            clearInterval(interval);
-            return false;
-        }
-        prevVal = currVal;
-        counter++;
-    }, 100)
-    cb(interval);
-}*/
+var currAlti = 1220
+var subtractThisMuch = 13;
+var groundLevel = 1000;
+var counter = 0;
 
 //Run this to test parachute code
 //opts.currAlti, opts.subtractThisMuch, opts.groundLevel
-var testParachuteWithDummyCode = function(opts={}) {
+var testParachuteWithDummyCode = function(opts) {
+    opts = opts||{};
     PARACHUTE_VARIABLES.RUNNING_TEST_CODE = 1;
     var currAlti = opts.currAlti||1220;
     var subtractThisMuch = opts.subtractThisMuch||13;
@@ -274,3 +293,4 @@ var testParachuteWithDummyCode = function(opts={}) {
         PARACHUTE_VARIABLES.RUNNING_TEST_CODE = 0;
     });
 }
+

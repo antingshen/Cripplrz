@@ -1,1 +1,1 @@
-cat Edison/parachute.js Edison/compass.js Edison/motor.js Edison/motormanager.js Edison/driver.js Edison/gps.js Edison/loop.js Edison/init.js > main.js
+cat Edison/sdcard.js Edison/unstucker.js Edison/parachute.js Edison/compass.js Edison/motor.js Edison/motormanager.js Edison/driver.js Edison/gps.js Edison/loop.js Edison/init.js > main.js
