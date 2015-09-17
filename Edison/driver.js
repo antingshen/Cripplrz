@@ -19,7 +19,7 @@ var MEMORIAL_GPS = {
     longitude: -122.2576996
 }
 
-var SLOWER_WHEEL_SPEED = 50,
+var SLOWER_WHEEL_SPEED = 80,
     FASTER_WHEEL_SPEED = 100;
 
 var FINAL_GPS = END_GPS;
@@ -64,7 +64,7 @@ var determineTurn = function(curHeading, finHeading, cb) {
     console.log(curHeading + " to " + finHeading);
     SDLog(curHeading + " to " + finHeading);
 
-    if(Math.abs(finHeading - curHeading) < Math.PI/4) {
+    if(Math.abs(finHeading - curHeading) < Math.PI/8) {
         cb(DIR_FORWARD);
     } else if(finHeading > curHeading) {
         if(finHeading - curHeading > Math.PI) {

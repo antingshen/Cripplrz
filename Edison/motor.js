@@ -118,3 +118,7 @@ var resetParachute = function() {
 var releaseParachute = function() {
     driveServo(1);
 }
+
+var disableParachute = function() {
+    MOTOR_PINS.analog.servo.enable(false);
+}

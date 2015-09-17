@@ -12,5 +12,5 @@ var mainLoop = function() {
             step();
             mainLoop();
         }
-    }, 1000)
+    }, 500)
 }

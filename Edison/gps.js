@@ -25,6 +25,8 @@ var initGPS = function(cb) {
             lastRead = (new Date).getTime();
           }
 
+          //console.log(data.toString())
+
           var gps = (data.toString().split("\n").filter(function(line) {
             return line.indexOf("GPGGA") > -1;
           }))[0];
@@ -32,7 +34,7 @@ var initGPS = function(cb) {
           if(gps) {
             gps = gps.split(",");
 
-            console.log(data.toString());
+            //console.log(data.toString());
 
             //console.log(gps);
 
@@ -57,7 +59,7 @@ var initGPS = function(cb) {
                 latitude = readGPS(latitude.degree, latitude.minute);
                 longitude = readGPS(longitude.degree, longitude.minute);
 
-                console.log({latitude: latitude, longitude: longitude, altitude: altitude});
+                //console.log({latitude: latitude, longitude: longitude, altitude: altitude});
 
                 cb({latitude: latitude, longitude: longitude, altitude: altitude});
               }
