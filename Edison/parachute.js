@@ -13,6 +13,12 @@ var PARACHUTE_VARIABLES = {
     TIME_TO_WAIT_BEFORE_SAMPLING : 900000
 }
 
+var initParachute = function(cb) {
+    setTimeout(function() {
+        checkServo(cb);
+    }, PARACHUTE_VARIABLES.TIME_TO_WAIT_BEFORE_SAMPLING);
+});
+
 var checkServo = function(cb) {
     var readyToRelease = false;
     var currGPSAlt;
