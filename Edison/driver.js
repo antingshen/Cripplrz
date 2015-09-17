@@ -1,7 +1,8 @@
 var m = require('/usr/lib/node_modules/mraa');
 
 var DIR_LEFT = 0,
-    DIR_RIGHT = 1;
+    DIR_RIGHT = 1,
+    DIR_FORWARD = 2;
 
 var START_GPS = {
     latitude: 37.8718992,
@@ -17,6 +18,9 @@ var MEMORIAL_GPS = {
     latitude: 37.8724111,
     longitude: -122.2576996
 }
+
+var SLOWER_WHEEL_SPEED = 50,
+    FASTER_WHEEL_SPEED = 100;
 
 var FINAL_GPS = END_GPS;
 
@@ -37,17 +41,20 @@ var determineDiff = function(start, end) {
 }
 
 var turnFromMagnitude = function(direction, magnitude) {
-    if(direction == DIR_LEFT) {
+    if(direction === DIR_LEFT) {
         console.log("Turning left with " + magnitude + " : " + determineMagnitude(magnitude) + ", 100");
-        //driveMotors(determineMagnitude(magnitude), 100);
-    } else {
+        //driveMotors(determineMagnitude(magnitude), FASTER_WHEEL_SPEED );
+    } else if(direction === DIR_RIGHT) {
         console.log("Turning right with " + magnitude + " : " + "100, " + determineMagnitude(magnitude));
-        //driveMotors(100, determineMagnitude(magnitude));
+        //driveMotors(FASTER_WHEEL_SPEED, determineMagnitude(magnitude));
+    } else {
+        console.log("Going forward at magnitude speed!");
+        //driveMotors(FASTER_WHEEL_SPEED, FASTER_WHEEL_SPEED);
     }
 }
 
 var determineMagnitude = function(diff) {
-    return (70+(Math.PI - diff)*30/Math.PI);
+    return SLOWER_WHEEL_SPEED; //(70+(Math.PI - diff)*30/Math.PI);
 }
 
 var determineTurn = function(curHeading, finHeading, cb) {
@@ -56,7 +63,9 @@ var determineTurn = function(curHeading, finHeading, cb) {
 
     console.log(curHeading + " to " + finHeading);
 
-    if(finHeading > curHeading) {
+    if(Math.abs(finHeading - curHeading) < Math.PI/4) {
+        cb(DIR_FORWARD);
+    } else if(finHeading > curHeading) {
         if(finHeading - curHeading > Math.PI) {
             console.log("1 Turn left");
             curHeading += 2*Math.PI;
