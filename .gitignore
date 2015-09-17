@@ -80,3 +80,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Custom
+# =========================
+
+main.js
