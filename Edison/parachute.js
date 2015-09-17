@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 //TODO: Have a hard coded start time (e.g. wait 15 minutes and then start)
 var PARACHUTE_VARIABLES = {
     GPS_THRESHOLD_ALTITUDE : 100, // Needs to be adjusted: threshold for difference between previous and current gps reading values for altitude
@@ -14,9 +16,15 @@ var PARACHUTE_VARIABLES = {
 }
 
 var initParachute = function(cb) {
-    setTimeout(function() {
-        checkServo(cb);
-    }, PARACHUTE_VARIABLES.TIME_TO_WAIT_BEFORE_SAMPLING);
+    readParachuteReleased(function(val) {
+        if(val === '1') {
+            cb();
+        } else {
+            setTimeout(function() {
+                checkServo(cb);
+            }, PARACHUTE_VARIABLES.TIME_TO_WAIT_BEFORE_SAMPLING);
+        }
+    })
 });
 
 var checkServo = function(cb) {
@@ -203,11 +211,17 @@ var copyGPSObject = function(objectToCopy) {
     return copy;
 }
 
-var fs = require('fs');
 var writeToParachuteReleased = function(text) {
     fs.writeFile('/home/root/parachuteReleased', text, function(err) {
         if (err) throw err;
     });
+}
+
+var readParachuteReleased = function(cb) {
+    fs.readFile('/home/root/parachuteReleased', function(err, data) {
+        if(err) throw err;
+        cb(data.toString());
+    })
 }
 
 /*var sampleAccelerometer = function(cb) {
