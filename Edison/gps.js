@@ -1,5 +1,5 @@
-var m = require('mraa');
-var SerialPort = require("serialport").SerialPort;
+var m = require('/usr/lib/node_modules/mraa');
+var SerialPort = require("/usr/lib/node_modules/serialport").SerialPort;
 
 var GPS_DATA = {};
 var lastRead = 0;

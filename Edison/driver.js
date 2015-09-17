@@ -1,4 +1,4 @@
-var m = require('mraa');
+var m = require('/usr/lib/node_modules/mraa');
 
 var DIR_LEFT = 0,
     DIR_RIGHT = 1;

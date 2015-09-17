@@ -1,4 +1,4 @@
-var m = require('mraa');
+var m = require('/usr/lib/node_modules/mraa');
 
 var COMPASS_OBJECT;
 
