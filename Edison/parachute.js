@@ -228,16 +228,15 @@ var writeToParachuteReleased = function(text) {
     cb(interval);
 }*/
 
-var currAlti = 1220
-var subtractThisMuch = 13;
-var groundLevel = 1000;
-var counter = 0;
-
 //Run this to test parachute code
-var testParachuteWithDummyCode = function() {
+//opts.currAlti, opts.subtractThisMuch, opts.groundLevel
+var testParachuteWithDummyCode = function(opts={}) {
     PARACHUTE_VARIABLES.RUNNING_TEST_CODE = 1;
+    var currAlti = opts.currAlti||1220;
+    var subtractThisMuch = opts.subtractThisMuch||13;
+    var groundLevel = opts.groundLevel||1000;
+    var counter = 0;
     setGPSTestData(0, 0, currAlti);
-
     var idClear = setInterval(function(cb) {
         if (currAlti > groundLevel) {
             currAlti -= subtractThisMuch;
